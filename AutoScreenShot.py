@@ -16,6 +16,7 @@ import tkinter as tk
 from tkinter import *
 from tkinter import font
 
+import imgcompare
 
 class AutoScreenshot:
     def __init__(self, master):
@@ -70,25 +71,35 @@ class AutoScreenshot:
         img1.save(fname)
         print("First Screenshot taken")
 
+        # maintain a reference image
+        self.ref_img = img1 
+
         # start taking screenshot of next images
         self.take_screenshots()       
 
     def take_screenshots(self):
+        #imgcompare param
+        tolerance = 5
+
+
         # grab first and second image
-        img1 = grab(bbox=self.cords)
-        time.sleep(1)
+        # img1 now becomes self.img1, to have a consistent ref
+        time.sleep(1) # check screen every x seconds
         img2 = grab(bbox=self.cords)
 
         # check difference between images
-        diff = ImageChops.difference(img1, img2)
-        bbox = diff.getbbox()
+        # use imgcompare percent difference
+        img_is_equal = imgcompare.is_equal(self.ref_img, img2, tolerance)
+
         
-        if bbox is not None:
+        if img_is_equal == False:
             now = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
             fname = self.new_folder + "/ScreenShots" + now + ".png"
             
             img2.save(fname)
             print("Screenshot taken")
+
+            self.ref_img = img2
 
         root.after(5, self.take_screenshots)
 
